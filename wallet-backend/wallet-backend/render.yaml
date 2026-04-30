@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: wallet-backend
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SUPABASE_URL
+        sync: false          # You'll paste this in the Render dashboard
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: BASIQ_API_KEY
+        sync: false
+      - key: BASIQ_BASE_URL
+        value: https://au-api.basiq.io
+      - key: ALLOWED_ORIGINS
+        sync: false          # e.g. https://your-app.vercel.app
+    healthCheckPath: /health
