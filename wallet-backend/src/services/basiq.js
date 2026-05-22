@@ -4,14 +4,8 @@ const BASE_URL = process.env.BASIQ_BASE_URL || 'https://au-api.basiq.io';
 let cachedToken = null;
 let tokenExpiresAt = 0;
 
-/**
- * Get a server-side Basiq API token.
- * Basiq tokens last 30 minutes — we cache and reuse them.
- */
 async function getBasiqToken() {
-  if (cachedToken && Date.now() < tokenExpiresAt - 60_000) {
-    return cachedToken;
-  }
+  if (cachedToken && Date.now() < tokenExpiresAt - 60_000) return cachedToken;
 
   const response = await axios.post(
     `${BASE_URL}/token`,
@@ -30,9 +24,6 @@ async function getBasiqToken() {
   return cachedToken;
 }
 
-/**
- * Returns an axios instance pre-configured with the Basiq auth token.
- */
 async function basiqClient() {
   const token = await getBasiqToken();
   return axios.create({
@@ -45,55 +36,28 @@ async function basiqClient() {
   });
 }
 
-/**
- * Create or retrieve a Basiq user for this wallet user.
- * Basiq represents your users as "users" in their system.
- * We store the Basiq user ID in our profiles table after first creation.
- */
 async function getOrCreateBasiqUser({ email, mobile, firstName, lastName, basiqUserId }) {
   const client = await basiqClient();
-
   if (basiqUserId) {
-    // Already linked — return existing Basiq user
     const { data } = await client.get(`/users/${basiqUserId}`);
     return data;
   }
-
-  // First time — create a Basiq user
-  const { data } = await client.post('/users', {
-    email,
-    mobile,
-    firstName,
-    lastName,
-  });
-
+  const { data } = await client.post('/users', { email, mobile, firstName, lastName });
   return data;
 }
 
-/**
- * Generate a Basiq "auth link" — a URL you send the user to so they can
- * securely connect their bank. Basiq handles the bank login UI.
- * After the user connects, Basiq redirects to your frontend with a code.
- */
 async function createAuthLink(basiqUserId) {
   const client = await basiqClient();
   const { data } = await client.post(`/users/${basiqUserId}/auth_link`);
-  return data; // { links: { public: "https://connect.basiq.io/..." } }
+  return data;
 }
 
-/**
- * Get all bank accounts connected by this user.
- */
 async function getAccounts(basiqUserId) {
   const client = await basiqClient();
   const { data } = await client.get(`/users/${basiqUserId}/accounts`);
   return data.data || [];
 }
 
-/**
- * Get transactions for a specific account.
- * Optionally filter by date range: { from: 'YYYY-MM-DD', to: 'YYYY-MM-DD' }
- */
 async function getTransactions(basiqUserId, filters = {}) {
   const client = await basiqClient();
   const params = new URLSearchParams();
@@ -101,10 +65,29 @@ async function getTransactions(basiqUserId, filters = {}) {
   if (filters.to) params.append('filter[to]', filters.to);
   if (filters.accountId) params.append('filter[account]', filters.accountId);
 
-  const { data } = await client.get(
-    `/users/${basiqUserId}/transactions?${params.toString()}`
-  );
+  const { data } = await client.get(`/users/${basiqUserId}/transactions?${params.toString()}`);
   return data.data || [];
+}
+
+/**
+ * Initiate a payment via Basiq (NPP/PayID).
+ * Money moves bank-to-bank — we never hold funds.
+ */
+async function initiatePayment(basiqUserId, { from_account_id, to_bsb, to_account, to_name, amount, description }) {
+  const client = await basiqClient();
+
+  const { data } = await client.post(`/users/${basiqUserId}/payments`, {
+    from: { accountId: from_account_id },
+    to: {
+      bsb: to_bsb,
+      accountNumber: to_account,
+      accountName: to_name,
+    },
+    amount: parseFloat(amount).toFixed(2),
+    description,
+  });
+
+  return data;
 }
 
 module.exports = {
@@ -112,4 +95,5 @@ module.exports = {
   createAuthLink,
   getAccounts,
   getTransactions,
+  initiatePayment,
 };

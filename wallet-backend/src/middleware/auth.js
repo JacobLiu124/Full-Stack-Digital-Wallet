@@ -1,33 +1,84 @@
+const express = require('express');
+const router = express.Router();
 const supabase = require('../supabaseClient');
+const { requireAuth } = require('../middleware/auth');
 
 /**
- * requireAuth middleware
+ * POST /api/auth/register
  *
- * The frontend logs in via Supabase directly and receives a JWT access token.
- * That token is sent in the Authorization header: "Bearer <token>"
- * This middleware verifies the token and attaches the user to req.user.
+ * Creates a new user in Supabase Auth AND a matching profile row in the
+ * public.profiles table. Called by your frontend's sign-up form.
  *
- * Usage: router.get('/protected', requireAuth, handler)
+ * Body: { email, password, full_name }
  */
-async function requireAuth(req, res, next) {
-  const authHeader = req.headers.authorization;
+router.post('/register', async (req, res) => {
+  const { email, password, full_name } = req.body;
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Missing or malformed Authorization header' });
+  if (!email || !password || !full_name) {
+    return res.status(400).json({ error: 'email, password and full_name are required' });
   }
 
-  const token = authHeader.split(' ')[1];
-
-  // Ask Supabase to verify the token — returns the user if valid
-  const { data: { user }, error } = await supabase.auth.getUser(token);
-
-  if (error || !user) {
-    return res.status(401).json({ error: 'Invalid or expired token' });
+  if (password.length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters' });
   }
 
-  // Attach user to request so route handlers can access req.user.id etc.
-  req.user = user;
-  next();
-}
+  // 1. Create the user in Supabase Auth (admin API — bypasses email confirmation for now)
+  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true, // set false if you want to require email confirmation
+    user_metadata: { full_name },
+  });
 
-module.exports = { requireAuth };
+  if (authError) {
+    // Supabase returns a clear error if the email is already taken
+    return res.status(400).json({ error: authError.message });
+  }
+
+  // 2. Create a profile row in your public.profiles table
+  const { error: profileError } = await supabase
+    .from('profiles')
+    .insert({
+      id: authData.user.id,     // same UUID as auth.users
+      full_name,
+      email,
+      created_at: new Date().toISOString(),
+    });
+
+  if (profileError) {
+    console.error('Profile creation failed:', profileError);
+    // User was created in Auth but profile insert failed — log and continue.
+    // A database trigger (see README) is a safer alternative.
+  }
+
+  res.status(201).json({
+    message: 'Account created successfully',
+    user: {
+      id: authData.user.id,
+      email: authData.user.email,
+      full_name,
+    },
+  });
+});
+
+/**
+ * GET /api/auth/me
+ *
+ * Returns the currently authenticated user's info.
+ * The frontend sends the Supabase JWT; this verifies it and returns the profile.
+ */
+router.get('/me', requireAuth, async (req, res) => {
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('id, full_name, email, avatar_url, created_at')
+    .eq('id', req.user.id)
+    .single();
+
+  if (error) {
+    return res.status(404).json({ error: 'Profile not found' });
+  }
+
+  res.json({ user: profile });
+});
+
+module.exports = router;
