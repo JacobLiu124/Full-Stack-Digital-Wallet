@@ -1,0 +1,112 @@
+.card {
+  position: relative;
+  background: linear-gradient(135deg, #18183a 0%, #1a1a2e 50%, #16213e 100%);
+  border: 1px solid rgba(124, 106, 255, 0.25);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px 22px;
+  overflow: hidden;
+  animation: fadeIn 0.4s ease;
+}
+
+.glow {
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(124,106,255,0.3), transparent 70%);
+  pointer-events: none;
+}
+
+.top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.45);
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.balance {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.currency {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.5);
+  font-family: var(--font-display);
+}
+
+.amount {
+  font-family: var(--font-display);
+  font-size: 42px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.username {
+  font-size: 13px;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 0;
+}
+
+.refresh {
+  width: 34px;
+  height: 34px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.6);
+  transition: background 0.15s, color 0.15s;
+}
+
+.refresh:hover:not(:disabled) {
+  background: rgba(255,255,255,0.14);
+  color: white;
+}
+
+.spinning svg {
+  animation: spin 0.7s linear infinite;
+}
+
+.accounts {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.account {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.accountName {
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+}
+
+.accountBalance {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.7);
+  font-family: var(--font-display);
+}
