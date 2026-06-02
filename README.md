@@ -1,6 +1,6 @@
 # Cove — Digital Wallet
 
-A full-stack peer-to-peer digital wallet with real bank data via Basiq, user authentication on Supabase, and a slick dark-mode React frontend.
+A full-stack peer-to-peer digital wallet with real bank data via Basiq, user authentication on Supabase, and a slick dark-mode React frontend. Here is a guide on how to run your own version. 
 
 ```
 wallet/
@@ -53,7 +53,7 @@ The frontend **never** holds a Basiq user ID, Basiq API key, or Supabase key. Al
 
 ```bash
 cd backend
-cp .env.example .env
+cp .env.example //change file name to -> '.env' no '.example'
 # Fill in SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, JWT_SECRET, BASIQ_API_KEY
 npm install
 npm run dev        # starts on :4000
@@ -83,7 +83,7 @@ npm run dev        # starts on :4000
 
 ```bash
 cd frontend
-cp .env.example .env
+cp .env.example //change file name to -> '.env' no '.example'
 # VITE_API_URL=http://localhost:4000  (or leave blank — Vite proxies /api)
 npm install
 npm run dev        # starts on :5173
@@ -108,17 +108,6 @@ The Vite dev server proxies `/api/*` → `http://localhost:4000` so you don't ne
 ## Security notes
 
 - Passwords are hashed with bcrypt (12 rounds).
-- JWTs expire in 7 days.
 - The backend uses the Supabase **service role** key — never expose it to the client.
 - Basiq credentials never leave the backend.
 - RLS is enabled on all Supabase tables as a defence-in-depth measure.
-
----
-
-## Production checklist
-
-- [ ] Set `JWT_SECRET` to a long random string
-- [ ] Set `FRONTEND_URL` in backend `.env` to your deployed frontend domain
-- [ ] Set `VITE_API_URL` in frontend `.env` to your deployed backend URL
-- [ ] Enable HTTPS on both services
-- [ ] Review Supabase RLS policies for direct DB access scenarios
