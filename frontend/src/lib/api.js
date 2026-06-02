@@ -49,3 +49,6 @@ export const getHistory = () => api.get('/transactions/history');
 
 // Users
 export const searchUsers = (q) => api.get(`/users/search?q=${encodeURIComponent(q)}`);
+
+// Change Password
+export const changePassword = (data) => api.post('/auth/change-password', data);

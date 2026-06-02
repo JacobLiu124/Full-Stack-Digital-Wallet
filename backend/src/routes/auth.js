@@ -138,4 +138,35 @@ router.get('/me', requireAuth, async (req, res) => {
   }
 });
 
+// POST /api/auth/change-password
+router.post('/change-password', requireAuth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Both fields required' });
+    }
+
+    const { data: user } = await supabase
+      .from('users')
+      .select('password_hash')
+      .eq('id', req.userId)
+      .single();
+
+    const valid = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!valid) {
+      return res.status(401).json({ error: 'Current password is incorrect' });
+    }
+
+    const newHash = await bcrypt.hash(newPassword, 12);
+    await supabase
+      .from('users')
+      .update({ password_hash: newHash })
+      .eq('id', req.userId);
+
+    return res.json({ success: true });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to change password' });
+  }
+});
+
 export default router;

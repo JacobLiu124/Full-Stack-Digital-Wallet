@@ -73,7 +73,11 @@ export default function DashboardPage() {
 
   return (
     <div className={styles.page}>
-      <Navbar user={user} />
+      <Navbar
+        user={user}
+        accounts={accounts}
+        onRefreshAccounts={loadData}
+      />
 
       <main className={styles.main}>
         <div className={styles.container}>
