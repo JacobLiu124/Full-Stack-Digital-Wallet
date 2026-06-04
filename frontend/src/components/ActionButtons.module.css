@@ -1,6 +1,6 @@
 .row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 10px;
 }
 
@@ -45,6 +45,12 @@
   background: var(--green-bg);
   color: var(--green);
   border: 1px solid rgba(74,222,128,0.2);
+}
+
+.split .icon {
+  background: var(--yellow-bg);
+  color: var(--yellow);
+  border: 1px solid rgba(251,191,36,0.2);
 }
 
 .label {

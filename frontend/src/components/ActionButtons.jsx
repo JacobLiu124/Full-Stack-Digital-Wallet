@@ -1,6 +1,6 @@
 import styles from './ActionButtons.module.css';
 
-export default function ActionButtons({ onPay, onRequest }) {
+export default function ActionButtons({ onPay, onRequest, onSplit }) {
   return (
     <div className={styles.row}>
       <button className={`${styles.btn} ${styles.pay}`} onClick={onPay}>
@@ -21,6 +21,15 @@ export default function ActionButtons({ onPay, onRequest }) {
           </svg>
         </span>
         <span className={styles.label}>Request</span>
+      </button>
+
+      <button className={`${styles.btn} ${styles.split}`} onClick={onSplit}>
+        <span className={styles.icon}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/>
+          </svg>
+        </span>
+        <span className={styles.label}>Split</span>
       </button>
     </div>
   );

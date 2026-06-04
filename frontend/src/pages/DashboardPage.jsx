@@ -9,6 +9,7 @@ import PayModal from '../components/PayModal.jsx';
 import RequestModal from '../components/RequestModal.jsx';
 import PendingRequestBanner from '../components/PendingRequestBanner.jsx';
 import styles from './DashboardPage.module.css';
+import SplitModal from '../components/SplitModal.jsx';
 
 export default function DashboardPage() {
   const { user, refreshUser } = useAuth();
@@ -101,6 +102,7 @@ export default function DashboardPage() {
           <ActionButtons
             onPay={() => { setPrefill(null); setModal('pay'); }}
             onRequest={() => setModal('request')}
+            onSplit={() => setModal('split')}
           />
 
           <TransactionHistory
@@ -120,6 +122,12 @@ export default function DashboardPage() {
       )}
       {modal === 'request' && (
         <RequestModal
+          onClose={() => setModal(null)}
+          onSuccess={onTransactionComplete}
+        />
+      )}
+      {modal === 'split' && (
+        <SplitModal
           onClose={() => setModal(null)}
           onSuccess={onTransactionComplete}
         />
